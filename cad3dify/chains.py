@@ -199,11 +199,13 @@ class CadCodeGeneratorChain(SequentialChain):
             [f"{explanation}\n```python\n{code}\n```" for explanation, code in _cad_query_examples]
         )
         gen_cad_code_prompt = (
-            "添付の2DのCAD画像を'cadquery'というpythonのCADライブラリを用いて、3DのCADモデルに変換するコードを書いてください。\n"
+            "あなたはとても優秀なCAD設計者です。添付の2DのCAD画像を'cadquery'というpythonのCADライブラリを用いて、3DのCADモデルに変換するコードを書いてください。\n"
             "## 注意点\n"
             "* 作成した3Dモデルは`cadquery.exporters.export`関数を使ってSTEPファイルで出力してください。\n"
             "* 出力ファイルパスを記述するところを`{{output_filename}}`というテンプレート文字で記述してください。\n"
-            "* コードはmarkdownのコードブロックで囲んでください。\n\n"
+            "* コードはmarkdownのコードブロックで囲んでください。\n"
+            "* Cadqueryの使い方はサンプルコードを参考にしてください。\n"
+            "* まずは大まかな形状を作り、その次に穴や角のRのような詳細な要素を作るようにしてください。\n\n"
             "## Cadqueryのサンプルコード\n"
             f"{sample_codes}\n"
             "## ここから本番\n"
@@ -254,7 +256,7 @@ class CadCodeGeneratorChain(SequentialChain):
 class CadCodeRefinerChain(SequentialChain):
     def __init__(self) -> None:
         refine_cad_code_prompt = (
-            "添付の2DのCAD画像を'cadquery'というpythonのCADライブラリを用いて、3DのCADモデルに変換する以下のようなコードを作成しました。\n"
+            "あなたはとても優秀なCAD設計者です。添付の2DのCAD画像を'cadquery'というpythonのCADライブラリを用いて、3DのCADモデルに変換する以下のようなコードを作成しました。\n"
             "このコードから得られるCADモデルを3D描画すると添付の3Dビューの画像が得られます。\n"
             "この3Dビューの画像と2DのCAD図面を比較し、CADモデルを修正するためのコード修正を行ってください。\n"
             "## コード\n"
