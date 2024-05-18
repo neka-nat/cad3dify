@@ -63,6 +63,67 @@ result = (
 )""",
     ),
     (
+        "This sample is one of the longer ones at 13 lines, but that's very short compared to the pythonOCC version, which is 10x longer!",
+        """(L, w, t) = (20.0, 6.0, 3.0)
+s = cq.Workplane("XY")
+
+# Draw half the profile of the bottle and extrude it
+p = (
+    s.center(-L / 2.0, 0)
+    .vLine(w / 2.0)
+    .threePointArc((L / 2.0, w / 2.0 + t), (L, w / 2.0))
+    .vLine(-w / 2.0)
+    .mirrorX()
+    .extrude(30.0, True)
+)
+
+# Make the neck
+p = p.faces(">Z").workplane(centerOption="CenterOfMass").circle(3.0).extrude(2.0, True)
+
+# Make a shell
+result = p.faces(">Z").shell(0.3)""",
+    ),
+    (
+        "This specific examples generates a helical cycloidal gear.",
+        """import cadquery as cq
+from math import sin, cos, pi, floor
+
+
+# define the generating function
+def hypocycloid(t, r1, r2):
+    return (
+        (r1 - r2) * cos(t) + r2 * cos(r1 / r2 * t - t),
+        (r1 - r2) * sin(t) + r2 * sin(-(r1 / r2 * t - t)),
+    )
+
+
+def epicycloid(t, r1, r2):
+    return (
+        (r1 + r2) * cos(t) - r2 * cos(r1 / r2 * t + t),
+        (r1 + r2) * sin(t) - r2 * sin(r1 / r2 * t + t),
+    )
+
+
+def gear(t, r1=4, r2=1):
+    if (-1) ** (1 + floor(t / 2 / pi * (r1 / r2))) < 0:
+        return epicycloid(t, r1, r2)
+    else:
+        return hypocycloid(t, r1, r2)
+
+
+# create the gear profile and extrude it
+result = (
+    cq.Workplane("XY")
+    .parametricCurve(lambda t: gear(t * 2 * pi, 6, 1))
+    .twistExtrude(15, 90)
+    .faces(">Z")
+    .workplane()
+    .circle(2)
+    .cutThruAll()
+)
+""",
+    ),
+    (
         "This script will produce any size regular rectangular Lego(TM) brick. Its only tricky because of the logic regarding the underside of the brick.",
         """#####
 # Inputs
