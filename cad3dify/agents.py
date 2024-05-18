@@ -5,12 +5,13 @@ from langchain_openai import ChatOpenAI
 
 _instructions = """You are an agent designed to execute and debug the given Python code.
 Please make corrections so that the code runs successfully without changing the intended purpose of the given code.
+`cadquery` is installed in the environment, so you can use it without setting it up.
 Even if you can tell that no corrections are needed without executing it, you still need to run the code to confirm it works properly.
 If it is difficult to make the code run successfully despite making corrections, respond with "I cannot fix it."
 """
 
 
-def execute_python_code(code: str, only_execute: bool = True) -> str:
+def execute_python_code(code: str, only_execute: bool = False) -> str:
     tools = [PythonREPLTool()]
     if only_execute:
         return tools[0].run(code)
