@@ -1,5 +1,7 @@
 # cad3dify
 
+Using GPT-4o, generate a 3D CAD model (STEP file) from a 2D CAD image.
+
 ## Getting started
 
 Installation.
@@ -27,6 +29,6 @@ We will use the sample file [here](http://cad.wp.xdomain.jp/).
 
 ![input](sample_data/g1-3.jpg)
 
-### Generate CAD
+### Generated 3D CAD model
 
 ![output](sample_data/gen_result1.png)
