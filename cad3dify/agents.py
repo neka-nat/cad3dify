@@ -18,7 +18,7 @@ def execute_python_code(code: str, only_execute: bool = False) -> str:
     base_prompt = hub.pull("langchain-ai/react-agent-template")
     prompt = base_prompt.partial(instructions=_instructions)
     agent = create_react_agent(
-        ChatOpenAI(model="gpt-4o-2024-05-13", temperature=0.0, max_tokens=4096),
+        ChatOpenAI(model="gpt-4o-2024-08-06", temperature=0.0, max_tokens=16384),
         tools=tools,
         prompt=prompt,
     )
