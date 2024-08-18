@@ -225,7 +225,7 @@ class CadCodeGeneratorChain(SequentialChain):
                 )
             ],
         )
-        llm = ChatOpenAI(model="gpt-4o-2024-05-13", temperature=0.0, max_tokens=4096)
+        llm = ChatOpenAI(model="gpt-4o-2024-08-06", temperature=0.0, max_tokens=16384)
 
         super().__init__(
             chains=[
@@ -294,7 +294,7 @@ class CadCodeRefinerChain(SequentialChain):
                 )
             ],
         )
-        llm = ChatOpenAI(model="gpt-4o-2024-05-13", temperature=0.0, max_tokens=4096)
+        llm = ChatOpenAI(model="gpt-4o-2024-08-06", temperature=0.0, max_tokens=16384)
 
         super().__init__(
             chains=[
