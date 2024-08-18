@@ -47,9 +47,17 @@ def generate_step_from_2d_cad_image(image_filepath: str, output_filepath: str, n
             result = refiner_chain.invoke(
                 {"code": code, "original_input": image_data, "rendered_result": rendered_image}
             )["result"]
+            if result is None:
+                logger.error(f"Refinement failed. Skipping to the next step.")
+                continue
             code = result.format(output_filename=output_filepath)
             logger.info("Refined code generation complete. Running code...")
             logger.debug(f"Generated {index_map(i)} refined code:")
             logger.debug(code)
-            output = execute_python_code(code)
-            logger.debug(output)
+            try:
+                output = execute_python_code(code)
+                logger.debug(output)
+            except Exception as e:
+                logger.error(f"Error occurred during code execution: {e}")
+                continue
+
