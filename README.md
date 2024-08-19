@@ -21,6 +21,12 @@ export OPENAI_API_KEY=<YOUR API KEY>
 python cli.py <2D CAD Image File>
 ```
 
+Or run streamlit spp
+
+```bash
+streamlit run scripts/app.py
+```
+
 ## Demo
 
 We will use the sample file [here](http://cad.wp.xdomain.jp/).
