@@ -4,6 +4,7 @@ from loguru import logger
 
 from .agents import execute_python_code
 from .chains import CadCodeGeneratorChain, CadCodeRefinerChain
+from .chat_models import MODEL_TYPE
 from .image import ImageData
 from .render import render_and_export_image
 
@@ -19,7 +20,12 @@ def index_map(index: int) -> str:
         return f"{index + 1}th"
 
 
-def generate_step_from_2d_cad_image(image_filepath: str, output_filepath: str, num_refinements: int = 3):
+def generate_step_from_2d_cad_image(
+    image_filepath: str,
+    output_filepath: str,
+    num_refinements: int = 3,
+    model_type: MODEL_TYPE = "gpt",
+):
     """Generate a STEP file from a 2D CAD image
 
     Args:
@@ -27,17 +33,17 @@ def generate_step_from_2d_cad_image(image_filepath: str, output_filepath: str, n
         output_filepath (str): Path to the output STEP file
     """
     image_data = ImageData.load_from_file(image_filepath)
-    chain = CadCodeGeneratorChain()
+    chain = CadCodeGeneratorChain(model_type=model_type)
 
     result = chain.invoke(image_data)["result"]
     code = result.format(output_filename=output_filepath)
     logger.info("1st code generation complete. Running code...")
     logger.debug("Generated 1st code:")
     logger.debug(code)
-    output = execute_python_code(code)
+    output = execute_python_code(code, model_type=model_type)
     logger.debug(output)
 
-    refiner_chain = CadCodeRefinerChain()
+    refiner_chain = CadCodeRefinerChain(model_type=model_type)
 
     for i in range(num_refinements):
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
@@ -55,9 +61,8 @@ def generate_step_from_2d_cad_image(image_filepath: str, output_filepath: str, n
             logger.debug(f"Generated {index_map(i)} refined code:")
             logger.debug(code)
             try:
-                output = execute_python_code(code)
+                output = execute_python_code(code, model_type=model_type)
                 logger.debug(output)
             except Exception as e:
                 logger.error(f"Error occurred during code execution: {e}")
                 continue
-

@@ -7,6 +7,7 @@ from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
 from langchain_core.prompts.image import ImagePromptTemplate
 from langchain_openai import ChatOpenAI
 
+from .chat_models import MODEL_TYPE, ChatModelParameters
 from .image import ImageData
 
 
@@ -194,7 +195,7 @@ else:
 
 
 class CadCodeGeneratorChain(SequentialChain):
-    def __init__(self) -> None:
+    def __init__(self, model_type: MODEL_TYPE = "gpt") -> None:
         sample_codes = "\n\n".join(
             [f"{explanation}\n```python\n{code}\n```" for explanation, code in _cad_query_examples]
         )
@@ -225,7 +226,7 @@ class CadCodeGeneratorChain(SequentialChain):
                 )
             ],
         )
-        llm = ChatOpenAI(model="gpt-4o-2024-08-06", temperature=0.0, max_tokens=16384)
+        llm = ChatModelParameters.from_model_name(model_type).create_chat_model()
 
         super().__init__(
             chains=[
@@ -254,7 +255,7 @@ class CadCodeGeneratorChain(SequentialChain):
 
 
 class CadCodeRefinerChain(SequentialChain):
-    def __init__(self) -> None:
+    def __init__(self, model_type: MODEL_TYPE = "gpt") -> None:
         refine_cad_code_prompt = (
             "あなたはとても優秀なCAD設計者です。添付の2DのCAD画像を'cadquery'というpythonのCADライブラリを用いて、3DのCADモデルに変換する以下のようなコードを作成しました。\n"
             "このコードから得られるCADモデルを3D描画すると添付の3Dビューの画像が得られます。\n"
@@ -294,7 +295,7 @@ class CadCodeRefinerChain(SequentialChain):
                 )
             ],
         )
-        llm = ChatOpenAI(model="gpt-4o-2024-08-06", temperature=0.0, max_tokens=16384)
+        llm = ChatModelParameters.from_model_name(model_type).create_chat_model()
 
         super().__init__(
             chains=[

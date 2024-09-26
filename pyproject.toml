@@ -8,21 +8,25 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-langchain = "^0.2.0"
-langchain-openai = "^0.1.7"
+langchain = "^0.3.0"
+langchain-openai = "^0.2.0"
 svglib = "^1.5.1"
-langchain-experimental = "^0.0.59"
+langchain-experimental = "^0.3.1"
 cadquery = "^2.4.0"
 rlpycairo = "^0.3.0"
 loguru = "^0.7.2"
 langchainhub = "^0.1.15"
 streamlit = "^1.37.1"
 numpy = "1.26.4"
+langchain-google-vertexai = {version = "^2.0.1", optional = true}
 
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
 isort = "^5.13.2"
+
+[tool.poetry.extras]
+vertexai = ["langchain-google-vertexai"]
 
 [build-system]
 requires = ["poetry-core"]

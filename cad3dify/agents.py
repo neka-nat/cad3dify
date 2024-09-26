@@ -3,6 +3,8 @@ from langchain.agents import AgentExecutor, create_react_agent
 from langchain_experimental.tools import PythonREPLTool
 from langchain_openai import ChatOpenAI
 
+from .chat_models import MODEL_TYPE, ChatModelParameters
+
 _instructions = """You are an agent designed to execute and debug the given Python code.
 Please make corrections so that the code runs successfully without changing the intended purpose of the given code.
 `cadquery` is installed in the environment, so you can use it without setting it up.
@@ -11,14 +13,14 @@ If it is difficult to make the code run successfully despite making corrections,
 """
 
 
-def execute_python_code(code: str, only_execute: bool = False) -> str:
+def execute_python_code(code: str, model_type: MODEL_TYPE = "gpt", only_execute: bool = False) -> str:
     tools = [PythonREPLTool()]
     if only_execute:
         return tools[0].run(code)
     base_prompt = hub.pull("langchain-ai/react-agent-template")
     prompt = base_prompt.partial(instructions=_instructions)
     agent = create_react_agent(
-        ChatOpenAI(model="gpt-4o-2024-08-06", temperature=0.0, max_tokens=16384),
+        ChatModelParameters.from_model_name(model_type).create_chat_model(),
         tools=tools,
         prompt=prompt,
     )

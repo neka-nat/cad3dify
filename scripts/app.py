@@ -1,8 +1,18 @@
+import argparse
+
 import streamlit as st
 from PIL import Image
 
 from cad3dify import generate_step_from_2d_cad_image
 
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_type", type=str, default="gpt")
+    return parser.parse_args()
+
+
+args = parse_args()
 
 st.title("2D図面 to 3DCAD")
 
@@ -16,7 +26,7 @@ if uploaded_file is not None:
     with open("temp.png", "wb") as f:
         f.write(uploaded_file.getbuffer())
     with st.spinner("画像を処理中..."):
-        generate_step_from_2d_cad_image("temp.png", "output.step")
+        generate_step_from_2d_cad_image("temp.png", "output.step", model_type=args.model_type)
     st.success("3DCADデータの生成が完了しました。")
 else:
     st.write("画像がアップロードされていません。")
