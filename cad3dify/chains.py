@@ -200,17 +200,17 @@ class CadCodeGeneratorChain(SequentialChain):
             [f"{explanation}\n```python\n{code}\n```" for explanation, code in _cad_query_examples]
         )
         gen_cad_code_prompt = (
-            "あなたはとても優秀なCAD設計者です。添付の2DのCAD画像を'cadquery'というpythonのCADライブラリを用いて、3DのCADモデルに変換するコードを書いてください。\n"
-            "## 注意点\n"
-            "* 作成した3Dモデルは`cadquery.exporters.export`関数を使ってSTEPファイルで出力してください。\n"
-            "* 出力ファイルパスを記述するところを`{{output_filename}}`というテンプレート文字で記述してください。\n"
-            "* コードはmarkdownのコードブロックで囲んでください。\n"
-            "* Cadqueryの使い方はサンプルコードを参考にしてください。\n"
-            "* まずは大まかな形状を作り、その次に穴や角のRのような詳細な要素を作るようにしてください。\n\n"
-            "## Cadqueryのサンプルコード\n"
+            "You are a highly skilled CAD designer. Please write code that converts the attached 2D CAD image into a 3D CAD model using a Python CAD library called 'cadquery.'\n"
+            "## Points to Note\n"
+            "* Please use the `cadquery.exporters.export` function to output the created 3D model as a STEP file.\n"
+            "* Where you describe the output file path, use the template string `{{output_filename}}`, which includes the file extension.\n"
+            "* Surround the code with a markdown code block.\n"
+            "* Refer to the sample code for how to use Cadquery.\n"
+            "* First, create the rough shape, and then create detailed elements like holes and fillets on corners.\n\n"
+            "## Cadquery Sample Code\n"
             f"{sample_codes}\n"
-            "## ここから本番\n"
-            "出力コード:"
+            "## Start here\n"
+            "Output code:"
         )
         prompt = ChatPromptTemplate(
             input_variables=["image_type", "image_data"],
@@ -255,46 +255,73 @@ class CadCodeGeneratorChain(SequentialChain):
 
 
 class CadCodeRefinerChain(SequentialChain):
+    model_type: MODEL_TYPE = "gpt"
+
     def __init__(self, model_type: MODEL_TYPE = "gpt") -> None:
         refine_cad_code_prompt = (
-            "あなたはとても優秀なCAD設計者です。添付の2DのCAD画像を'cadquery'というpythonのCADライブラリを用いて、3DのCADモデルに変換する以下のようなコードを作成しました。\n"
-            "このコードから得られるCADモデルを3D描画すると添付の3Dビューの画像が得られます。\n"
-            "この3Dビューの画像と2DのCAD図面を比較し、CADモデルを修正するためのコード修正を行ってください。\n"
-            "## コード\n"
+            "You are a highly skilled CAD designer. You have created the following code that converts the attached 2D CAD image into a 3D CAD model using a Python CAD library called 'cadquery.'\n"
+            "When the CAD model obtained from this code is rendered in 3D, the attached 3D view image is obtained.\n"
+            "Please compare this 3D view image with the 2D CAD drawing and modify the code to correct the CAD model.\n"
+            "## Code\n"
             "```python\n"
             "{code}\n"
             "```\n"
-            "## ここから本番\n"
-            "修正コード:"
+            "## Start here\n"
+            "Corrected code:"
         )
-        prompt = ChatPromptTemplate(
-            input_variables=[
-                "code",
-                "original_image_type",
-                "original_image_data",
-                "rendered_image_type",
-                "rendered_image_data",
-            ],
-            messages=[
-                HumanMessagePromptTemplate(
-                    prompt=[
-                        PromptTemplate(input_variables=["code"], template=refine_cad_code_prompt),
-                        ImagePromptTemplate(
-                            input_variables=["original_image_type", "original_image_data"],
-                            template={
-                                "url": "data:image/{original_image_type};base64,{original_image_data}",
-                            },
-                        ),
-                        ImagePromptTemplate(
-                            input_variables=["rendered_image_type", "rendered_image_data"],
-                            template={
-                                "url": "data:image/{rendered_image_type};base64,{rendered_image_data}",
-                            },
-                        ),
-                    ]
-                )
-            ],
-        )
+        if model_type == "gpt":
+            prompt = ChatPromptTemplate(
+                input_variables=[
+                    "code",
+                    "original_image_type",
+                    "original_image_data",
+                    "rendered_image_type",
+                    "rendered_image_data",
+                ],
+                messages=[
+                    HumanMessagePromptTemplate(
+                        prompt=[
+                            PromptTemplate(input_variables=["code"], template=refine_cad_code_prompt),
+                            ImagePromptTemplate(
+                                input_variables=["original_image_type", "original_image_data"],
+                                template={
+                                    "url": "data:image/{original_image_type};base64,{original_image_data}",
+                                },
+                            ),
+                            ImagePromptTemplate(
+                                input_variables=["rendered_image_type", "rendered_image_data"],
+                                template={
+                                    "url": "data:image/{rendered_image_type};base64,{rendered_image_data}",
+                                },
+                            ),
+                        ]
+                    )
+                ],
+            )
+        elif model_type == "llama":
+            prompt = ChatPromptTemplate(
+                input_variables=[
+                    "code",
+                    "original_and_rendered_image_type",
+                    "original_and_rendered_image_data",
+                ],
+                messages=[
+                    HumanMessagePromptTemplate(
+                        prompt=[
+                            PromptTemplate(input_variables=["code"], template=refine_cad_code_prompt),
+                            ImagePromptTemplate(
+                                input_variables=["original_and_rendered_image_type", "original_and_rendered_image_data"],
+                                template={
+                                    "url": "data:image/{original_and_rendered_image_type};base64,{original_and_rendered_image_data}",
+                                },
+                            ),
+                            
+                        ]
+                    )
+                ],
+            )
+        else:
+            raise ValueError(f"Invalid model type: {model_type}")
         llm = ChatModelParameters.from_model_name(model_type).create_chat_model()
 
         super().__init__(
@@ -307,16 +334,11 @@ class CadCodeRefinerChain(SequentialChain):
                     atransform=None,
                 ),
             ],
-            input_variables=[
-                "code",
-                "original_image_type",
-                "original_image_data",
-                "rendered_image_type",
-                "rendered_image_data",
-            ],
+            input_variables=prompt.input_variables,
             output_variables=["result"],
             verbose=True,
         )
+        self.model_type = model_type
 
     def prep_inputs(self, inputs: Union[dict[str, Any], Any]) -> dict[str, str]:
         assert (
@@ -327,9 +349,17 @@ class CadCodeRefinerChain(SequentialChain):
             and "code" in inputs
             and isinstance(inputs["code"], str)
         ), "inputs must have 'original_input' and 'rendered_result' and 'code' keys"
-        inputs["original_image_type"] = inputs["original_input"].type
-        inputs["original_image_data"] = inputs["original_input"].data
-        inputs["rendered_image_type"] = inputs["rendered_result"].type
-        inputs["rendered_image_data"] = inputs["rendered_result"].data
+        if self.model_type == "gpt":
+            inputs["original_image_type"] = inputs["original_input"].type
+            inputs["original_image_data"] = inputs["original_input"].data
+            inputs["rendered_image_type"] = inputs["rendered_result"].type
+            inputs["rendered_image_data"] = inputs["rendered_result"].data
+        elif self.model_type == "llama":
+            inputs["original_and_rendered_image_type"] = inputs["original_input"].type
+            inputs["original_and_rendered_image_data"] = inputs["original_input"].merge(
+                inputs["rendered_result"]
+            )
+        else:
+            raise ValueError(f"Invalid model type: {self.model_type}")
         inputs["code"] = inputs["code"]
         return inputs

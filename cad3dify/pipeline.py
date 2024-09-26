@@ -32,6 +32,7 @@ def generate_step_from_2d_cad_image(
         image_filepath (str): Path to the 2D CAD image
         output_filepath (str): Path to the output STEP file
     """
+    only_execute = (model_type == "llama")  # llamaだとagentがうまく動かない
     image_data = ImageData.load_from_file(image_filepath)
     chain = CadCodeGeneratorChain(model_type=model_type)
 
@@ -40,7 +41,7 @@ def generate_step_from_2d_cad_image(
     logger.info("1st code generation complete. Running code...")
     logger.debug("Generated 1st code:")
     logger.debug(code)
-    output = execute_python_code(code, model_type=model_type)
+    output = execute_python_code(code, model_type=model_type, only_execute=only_execute)
     logger.debug(output)
 
     refiner_chain = CadCodeRefinerChain(model_type=model_type)
@@ -61,7 +62,7 @@ def generate_step_from_2d_cad_image(
             logger.debug(f"Generated {index_map(i)} refined code:")
             logger.debug(code)
             try:
-                output = execute_python_code(code, model_type=model_type)
+                output = execute_python_code(code, model_type=model_type, only_execute=only_execute)
                 logger.debug(output)
             except Exception as e:
                 logger.error(f"Error occurred during code execution: {e}")

@@ -2,7 +2,9 @@ import argparse
 
 import streamlit as st
 from PIL import Image
+from dotenv import load_dotenv
 
+load_dotenv()
 from cad3dify import generate_step_from_2d_cad_image
 
 
