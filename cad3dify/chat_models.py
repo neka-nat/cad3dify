@@ -1,5 +1,14 @@
 from typing import Literal
 
+try:
+    import os
+
+    import vertexai
+    vertexai.init(project=os.environ["VERTEXAI_PROJECT"], location=os.environ["VERTEXAI_LOCATION"])
+except KeyError:
+    print("VertexAI is not initialized. Please set VERTEXAI_PROJECT and VERTEXAI_LOCATION environment variables.")
+except Exception as e:
+    pass
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
