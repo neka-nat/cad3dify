@@ -1,6 +1,6 @@
 # cad3dify
 
-Using GPT-4o, generate a 3D CAD model (STEP file) from a 2D CAD image.
+Using GPT-4o (or Llama 3.2 on Vertex AI), generate a 3D CAD model (STEP file) from a 2D CAD image.
 
 ## Getting started
 
