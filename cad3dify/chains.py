@@ -6,7 +6,6 @@ from langchain import PromptTemplate
 from langchain.chains import LLMChain, SequentialChain, TransformChain
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
 from langchain_core.prompts.image import ImagePromptTemplate
-from langchain_openai import ChatOpenAI
 
 from .chat_models import MODEL_TYPE, ChatModelParameters
 from .image import ImageData
