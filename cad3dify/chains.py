@@ -195,27 +195,73 @@ else:
 
 
 _design_steps = """
-1. Basic Shape Creation:
-  - Select a sketch plane (e.g., XY, XZ, or custom reference plane).
-  - Draw the basic 2D shape using geometric tools like rectangles, circles, or polygons.
-  - Define the dimensions for the sketch (e.g., width, height, or diameter) and ensure precision.
-  - Apply geometric constraints such as parallel, perpendicular, or tangent relationships to stabilize the sketch.
-  - Extrude the sketch to create a 3D solid with a specified thickness or height.
-  - Optionally, revolve the sketch around a defined axis to create symmetrical shapes like cylinders or spheres.
-2. Adding Details:
-  - Apply fillets (rounded edges) to specific corners or edges. Specify the radius for each fillet (e.g., R5mm).
-  - Add chamfers (angled edges) with defined dimensions or angles (e.g., 2mm × 45°).
-  - Create threaded or smooth holes using standard parameters (e.g., M6 × 1.0 thread, depth 15mm). Ensure the correct placement on the surface.
-  - Add additional features like bosses (protrusions) or pockets (depressions) using extrusion or cutting tools.
-  - Use patterning tools to repeat features (e.g., holes or slots) across a surface with specified intervals and quantities.
-3. Setting Constraints:
-  - Assign dimensional constraints to ensure the accuracy of all features (e.g., fixed length, width, or spacing between elements).
-  - Use geometric constraints to maintain relationships between components (e.g., concentric, tangent, or symmetric relationships).
-  - Define relationships between features (e.g., align one feature to the center of another or make all holes equidistant).
-  - Ensure that the design is parametric so any changes to dimensions automatically update related features.
-4. Validation and Adjustments:
-  - After creating the model, validate it for consistency, ensuring no open profiles or constraint conflicts.
-  - Make adjustments where necessary by modifying dimensions or adding/removing constraints.
+1. **Model Construction Steps**
+   - **Setting the Workplane**:
+     - Use the `Workplane()` method to select the appropriate workplane (e.g., "XY", "XZ", "YZ").
+     - If necessary, offset the plane using `workplane(offset=value)`.
+     - **Note**: The workplane serves as the basis for sketches and operations, so it's crucial to set it correctly. Choosing the wrong plane may result in shapes being created in unintended positions.
+   - **Drawing Basic Shapes**:
+     - Use methods like `circle()`, `rect()`, `polygon()` to draw 2D shapes.
+     - Specify dimensions (e.g., radius, width, height) clearly.
+     - **Note**: In CadQuery, the order of method chaining is important. Always set the workplane before drawing shapes, and specify dimensions accurately.
+   - **Creating 3D Shapes**:
+     - Convert 2D shapes into 3D using methods like `extrude()`, `revolve()`.
+     - Specify the direction and distance of extrusion precisely.
+     - **Note**: Using negative values will extrude in the opposite direction, so pay attention to the direction.
+   - **Adding Details**:
+     - **Fillets and Chamfers**:
+       - Use the `fillet()`, `chamfer()` methods to process edges.
+       - Use selectors like `edges()`, `faces()` to accurately select the edges to apply.
+       - **Note**: Incorrect edge selection may result in unintended areas being processed.
+     - **Creating Holes and Pockets**:
+       - Remove material using methods like `hole()`, `cutBlind()`, `cutThruAll()`.
+       - Specify positions and dimensions in detail.
+       - **Note**: Before making holes, select the appropriate workplane or face.
+     - **Patterning**:
+       - Repeat features using methods like `mirror()`, `array()`, `polarArray()`.
+       - **Note**: Specify the direction and spacing of repetitions accurately.
+   - **Defining Dimensions and Parameters**:
+     - Define important dimensions as variables and use them consistently in the code.
+     - **Note**: Parameterizing makes it easier to change dimensions later.
+   - **Adding Comments**:
+     - Add comments to each step to enhance code readability and maintainability.
+2. **Setting Constraints**
+   - **Dimensional Constraints**:
+     - Specify dimensions accurately to ensure model precision.
+     - **Note**: CadQuery supports parametric modeling, and changes in dimensions reflect throughout the model.
+   - **Geometric Constraints**:
+     - Use appropriate sketching techniques to maintain relationships between features.
+     - **Note**: CadQuery itself does not have constraint functions within sketches, so dimensions and positions need to be set carefully.
+   - **Defining Relationships Between Features**:
+     - Position features using methods like `translate()`, `rotate()`, `align()`.
+     - **Note**: Specify alignment using absolute or relative coordinates accurately.
+3. **Verification and Adjustment**
+   - **Model Verification**:
+     - Confirm the validity of the model using the `val().isValid()` method.
+     - **Note**: If errors occur, check boolean operations and shape consistency.
+   - **Making Adjustments**:
+     - Change parameters or dimensions and regenerate the model.
+     - **Note**: After changing parameters, ensure all related parts are updated correctly.
+   - **Error Checking and Debugging**:
+     - Review error messages and identify problematic areas.
+     - Visualize intermediate results using the `show_object()` method.
+     - **Note**: CadQuery errors may not be specific, so check results at each step.
+4. **Points Specific to CadQuery**
+   - **Order of Method Chaining**:
+     - The order of method chaining affects the result, so describe the sequence of operations precisely.
+     - **Example**: Set the plane with `workplane()` before drawing shapes with `circle()`.
+   - **Using Selectors**:
+     - Use appropriate selectors like `faces()`, `edges()`, `vertices()` when selecting specific parts of the shape.
+     - **Note**: Ambiguous selector specifications may result in unintended parts being selected.
+   - **Workplane Context**:
+     - Using `workplane()` changes the workplane, affecting subsequent operations.
+     - **Note**: Be mindful of which workplane is active for each operation.
+   - **Handling Boolean Operations**:
+     - Confirm the validity and consistency of shapes when combining them using `union()`, `cut()`, `intersect()`.
+     - **Note**: Tiny gaps or overlaps may cause errors.
+   - **Ensuring Parametric Design**:
+     - Manage all dimensions with variables so that the model updates dynamically.
+     - **Note**: Manually entering numbers makes changes difficult later.
 """
 
 
