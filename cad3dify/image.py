@@ -51,3 +51,14 @@ class ImageData(BaseModel):
         output = io.BytesIO()
         dst.save(output, format=self.type)
         return ImageData(data=base64.b64encode(output.getvalue()).decode("utf-8"), type=self.type)
+
+    def convert(self, type: ImageTypes) -> "ImageData":
+        """画像データを指定された形式に変換する
+
+        Args:
+            type (ImageTypes): 変換する形式
+        """
+        img = Image.open(io.BytesIO(base64.b64decode(self.data)))
+        output = io.BytesIO()
+        img.save(output, format=type)
+        return ImageData(data=base64.b64encode(output.getvalue()).decode("utf-8"), type=type)

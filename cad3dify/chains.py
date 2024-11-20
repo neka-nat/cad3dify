@@ -221,6 +221,8 @@ _design_steps = """
 
 
 class CadCodeGeneratorChain(SequentialChain):
+    model_type: MODEL_TYPE = "gpt"
+
     def __init__(self, model_type: MODEL_TYPE = "gpt") -> None:
         sample_codes = "\n\n".join(
             [f"{explanation}\n```python\n{code}\n```" for explanation, code in _cad_query_examples]
@@ -269,6 +271,7 @@ class CadCodeGeneratorChain(SequentialChain):
             output_variables=["result"],
             verbose=True,
         )
+        self.model_type = model_type
 
     def prep_inputs(self, inputs: Union[dict[str, Any], Any]) -> dict[str, str]:
         assert isinstance(inputs, ImageData) or (
@@ -276,6 +279,8 @@ class CadCodeGeneratorChain(SequentialChain):
         ), "inputs must be ImageData or dict with 'input' and 'input' must be ImageData"
         if isinstance(inputs, ImageData):
             inputs = {"input": inputs}
+        if self.model_type == "claude" and inputs["input"].type != "png":
+            inputs["input"] = inputs["input"].convert("png")
         inputs["image_type"] = inputs["input"].type
         inputs["image_data"] = inputs["input"].data
         return inputs
@@ -377,6 +382,10 @@ class CadCodeRefinerChain(SequentialChain):
             and isinstance(inputs["code"], str)
         ), "inputs must have 'original_input' and 'rendered_result' and 'code' keys"
         if self.model_type in ["gpt", "claude"]:
+            if self.model_type == "claude" and inputs["original_input"].type != "png":
+                # if the image type is not png and the model is claude, convert it to png.
+                inputs["original_input"] = inputs["original_input"].convert("png")
+                inputs["rendered_result"] = inputs["rendered_result"].convert("png")
             inputs["original_image_type"] = inputs["original_input"].type
             inputs["original_image_data"] = inputs["original_input"].data
             inputs["rendered_image_type"] = inputs["rendered_result"].type
