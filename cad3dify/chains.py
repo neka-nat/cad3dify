@@ -1,4 +1,5 @@
 import re
+import textwrap
 from typing import Any, Union
 
 from langchain import PromptTemplate
@@ -194,6 +195,31 @@ else:
 ]
 
 
+_design_steps = """
+1. Basic Shape Creation:
+  - Select a sketch plane (e.g., XY, XZ, or custom reference plane).
+  - Draw the basic 2D shape using geometric tools like rectangles, circles, or polygons.
+  - Define the dimensions for the sketch (e.g., width, height, or diameter) and ensure precision.
+  - Apply geometric constraints such as parallel, perpendicular, or tangent relationships to stabilize the sketch.
+  - Extrude the sketch to create a 3D solid with a specified thickness or height.
+  - Optionally, revolve the sketch around a defined axis to create symmetrical shapes like cylinders or spheres.
+2. Adding Details:
+  - Apply fillets (rounded edges) to specific corners or edges. Specify the radius for each fillet (e.g., R5mm).
+  - Add chamfers (angled edges) with defined dimensions or angles (e.g., 2mm × 45°).
+  - Create threaded or smooth holes using standard parameters (e.g., M6 × 1.0 thread, depth 15mm). Ensure the correct placement on the surface.
+  - Add additional features like bosses (protrusions) or pockets (depressions) using extrusion or cutting tools.
+  - Use patterning tools to repeat features (e.g., holes or slots) across a surface with specified intervals and quantities.
+3. Setting Constraints:
+  - Assign dimensional constraints to ensure the accuracy of all features (e.g., fixed length, width, or spacing between elements).
+  - Use geometric constraints to maintain relationships between components (e.g., concentric, tangent, or symmetric relationships).
+  - Define relationships between features (e.g., align one feature to the center of another or make all holes equidistant).
+  - Ensure that the design is parametric so any changes to dimensions automatically update related features.
+4. Validation and Adjustments:
+  - After creating the model, validate it for consistency, ensuring no open profiles or constraint conflicts.
+  - Make adjustments where necessary by modifying dimensions or adding/removing constraints.
+"""
+
+
 class CadCodeGeneratorChain(SequentialChain):
     def __init__(self, model_type: MODEL_TYPE = "gpt") -> None:
         sample_codes = "\n\n".join(
@@ -206,7 +232,8 @@ class CadCodeGeneratorChain(SequentialChain):
             "* Where you describe the output file path, use the template string `{{output_filename}}`. The 'output_filename' includes the file extension.\n"
             "* Surround the code with a markdown code block.\n"
             "* Refer to the sample code for how to use Cadquery.\n"
-            "* First, create the rough shape, and then create detailed elements like holes and fillets on corners.\n\n"
+            "* Write CAD code following these steps:\n"
+            f"{textwrap.indent(_design_steps, prefix='  ')}\n"
             "## Cadquery Sample Code\n"
             f"{sample_codes}\n"
             "## Start here\n"
@@ -269,7 +296,7 @@ class CadCodeRefinerChain(SequentialChain):
             "## Start here\n"
             "Corrected code:"
         )
-        if model_type == "gpt":
+        if model_type in ["gpt", "claude"]:
             prompt = ChatPromptTemplate(
                 input_variables=[
                     "code",
@@ -349,7 +376,7 @@ class CadCodeRefinerChain(SequentialChain):
             and "code" in inputs
             and isinstance(inputs["code"], str)
         ), "inputs must have 'original_input' and 'rendered_result' and 'code' keys"
-        if self.model_type == "gpt":
+        if self.model_type in ["gpt", "claude"]:
             inputs["original_image_type"] = inputs["original_input"].type
             inputs["original_image_data"] = inputs["original_input"].data
             inputs["rendered_image_type"] = inputs["rendered_result"].type

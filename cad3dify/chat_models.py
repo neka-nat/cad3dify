@@ -9,17 +9,19 @@ except KeyError:
     print("VertexAI is not initialized. Please set VERTEXAI_PROJECT and VERTEXAI_LOCATION environment variables.")
 except Exception as e:
     pass
+from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
-MODEL_TYPE = Literal["gpt", "llama"]
+MODEL_TYPE = Literal["gpt", "claude", "llama"]
 
 
 class ChatModelParameters(BaseModel):
     provider: str
     model_name: str
     temperature: float
+    max_tokens: int | None = None
 
     @classmethod
     def default(cls) -> "ChatModelParameters":
@@ -41,6 +43,13 @@ class ChatModelParameters(BaseModel):
                 provider="openai",
                 model_name="gpt-4o-2024-08-06",
                 temperature=temperature,
+                max_tokens=16384,
+            ),
+            "claude": cls(
+                provider="anthropic",
+                model_name="claude-3-5-sonnet-20241022",
+                temperature=temperature,
+                max_tokens=8192,
             ),
             "llama": cls(
                 provider="vertex_ai",
@@ -55,7 +64,13 @@ class ChatModelParameters(BaseModel):
             return ChatOpenAI(
                 model=self.model_name,
                 temperature=self.temperature,
-                max_tokens=16384,
+                max_tokens=self.max_tokens,
+            )
+        elif self.provider == "anthropic":
+            return ChatAnthropic(
+                model=self.model_name,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
             )
         elif self.provider == "vertex_ai":
             from google.auth import default

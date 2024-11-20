@@ -20,6 +20,7 @@ streamlit = "^1.37.1"
 numpy = "1.26.4"
 langchain-google-vertexai = {version = "^2.0.1", optional = true}
 python-dotenv = "^1.0.1"
+langchain-anthropic = "^0.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
