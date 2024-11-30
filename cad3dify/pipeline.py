@@ -3,11 +3,11 @@ import tempfile
 from loguru import logger
 
 from .agents import execute_python_code
-from .chains import CadCodeGeneratorChain, CadCodeRefinerChain
 from .chat_models import MODEL_TYPE
 from .image import ImageData
 from .render import render_and_export_image
-
+from .v1.cad_code_refiner import CadCodeRefinerChain
+from .v1.cad_code_generator import CadCodeGeneratorChain
 
 def index_map(index: int) -> str:
     if index == 0:
