@@ -11,14 +11,16 @@ except Exception as e:
     pass
 from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
-MODEL_TYPE = Literal["gpt", "claude", "llama"]
+MODEL_TYPE = Literal["gpt", "claude", "gemini", "llama"]
+PROVIDER_TYPE = Literal["openai", "anthropic", "google", "vertex_ai"]
 
 
 class ChatModelParameters(BaseModel):
-    provider: str
+    provider: PROVIDER_TYPE
     model_name: str
     temperature: float
     max_tokens: int | None = None
@@ -51,6 +53,12 @@ class ChatModelParameters(BaseModel):
                 temperature=temperature,
                 max_tokens=8192,
             ),
+            "gemini": cls(
+                provider="google",
+                model_name="gemini-2.0-flash-exp",
+                temperature=temperature,
+                max_tokens=8192,
+            ),
             "llama": cls(
                 provider="vertex_ai",
                 model_name="meta/llama-3.2-90b-vision-instruct-maas",
@@ -68,6 +76,12 @@ class ChatModelParameters(BaseModel):
             )
         elif self.provider == "anthropic":
             return ChatAnthropic(
+                model=self.model_name,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+            )
+        elif self.provider == "google":
+            return ChatGoogleGenerativeAI(
                 model=self.model_name,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
