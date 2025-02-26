@@ -49,7 +49,7 @@ class ChatModelParameters(BaseModel):
             ),
             "claude": cls(
                 provider="anthropic",
-                model_name="claude-3-5-sonnet-20241022",
+                model_name="claude-3-7-sonnet-20250219",
                 temperature=temperature,
                 max_tokens=8192,
             ),

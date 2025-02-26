@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import streamlit as st
 from PIL import Image
@@ -23,12 +24,15 @@ uploaded_file = st.sidebar.file_uploader("画像ファイルを選択してく�
 # 画像がアップロードされたら表示
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
+    ext = os.path.splitext(uploaded_file.name)[1]
     st.image(image, caption="アップロードされた画像", use_column_width=True)
     st.write("画像のサイズ: ", image.size)
-    with open("temp.png", "wb") as f:
+    with open(f"temp.{ext}", "wb") as f:
         f.write(uploaded_file.getbuffer())
     with st.spinner("画像を処理中..."):
-        generate_step_from_2d_cad_image("temp.png", "output.step", model_type=args.model_type)
+        generate_step_from_2d_cad_image(
+            f"temp.{ext}", "output.step", model_type=args.model_type, chain_type=args.chain_type
+        )
     st.success("3DCADデータの生成が完了しました。")
 else:
     st.write("画像がアップロードされていません。")
