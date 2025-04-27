@@ -34,11 +34,11 @@ streamlit run scripts/app.py -- --model_type llama  # Use Llama 3.2 on Vertex AI
 
 ```mermaid
 graph TD
-    Input[Input Image] --> CodeGenerator[CAD Code Generator AI Agent]
-    CodeGenerator --> PythonDebugger[Python Execution and Debugging AI Agent]
-    PythonDebugger --> StepFile[STEP File]
-    StepFile --> Rendering[Rendering 3D CAD Model Image from STEP File]
-    Rendering --> Refiner[CAD Code Refiner AI Agent]
+    Input((Input Image)) --> CodeGenerator(CAD Code Generator AI Agent)
+    CodeGenerator --> PythonDebugger(Python Execution and Debugging AI Agent)
+    PythonDebugger --> StepFile((STEP File))
+    StepFile --> Rendering(Rendering 3D CAD Model Image from STEP File)
+    Rendering --> Refiner(CAD Code Refiner AI Agent)
     Refiner --> PythonDebugger
 ```
 
