@@ -39,7 +39,7 @@ graph TD
     PythonDebugger --> StepFile[STEP File]
     StepFile --> Rendering[Rendering 3D CAD Model Image from STEP File]
     Rendering --> Refiner[CAD Code Refiner AI Agent]
-    Refiner --> StepFile
+    Refiner --> PythonDebugger
 ```
 
 ## Demo
