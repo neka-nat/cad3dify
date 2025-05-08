@@ -31,7 +31,7 @@ if uploaded_file is not None:
         f.write(uploaded_file.getbuffer())
     with st.spinner("画像を処理中..."):
         generate_step_from_2d_cad_image(
-            f"temp.{ext}", "output.step", model_type=args.model_type, chain_type=args.chain_type
+            f"temp.{ext}", "output.step", model_type=args.model_type
         )
     st.success("3DCADデータの生成が完了しました。")
 else:

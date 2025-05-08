@@ -55,7 +55,7 @@ class ChatModelParameters(BaseModel):
             ),
             "gemini": cls(
                 provider="google",
-                model_name="gemini-2.0-flash-exp",
+                model_name="gemini-2.5-pro-preview-05-06",
                 temperature=temperature,
                 max_tokens=8192,
             ),

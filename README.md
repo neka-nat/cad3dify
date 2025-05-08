@@ -26,7 +26,7 @@ Or run streamlit spp
 ```bash
 streamlit run scripts/app.py
 streamlit run scripts/app.py -- --model_type claude  # Use Claude 3.7 sonnet
-streamlit run scripts/app.py -- --model_type gemini  # Use Gemini 2.0 flash
+streamlit run scripts/app.py -- --model_type gemini  # Use Gemini 2.5 pro preview
 streamlit run scripts/app.py -- --model_type llama  # Use Llama 3.2 on Vertex AI
 ```
 
