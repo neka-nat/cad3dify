@@ -27,6 +27,7 @@ export const CadProcessor: React.FC = () => {
   const [dragActive, setDragActive] = useState(false)
   const [isViewerReady, setIsViewerReady] = useState(false)
   const [isChatCollapsed, setIsChatCollapsed] = useState(false)
+  const [currentStepUrl, setCurrentStepUrl] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -64,8 +65,8 @@ export const CadProcessor: React.FC = () => {
     try {
       // Initialize Three.js scene with enhanced visuals
       const scene = new THREE.Scene()
-      scene.background = new THREE.Color(0x0f172a) // Darker background
-      scene.fog = new THREE.Fog(0x0f172a, 10, 50) // Add atmospheric fog
+      scene.background = new THREE.Color(0x0f172a)
+      scene.fog = new THREE.Fog(0x0f172a, 10, 50)
       
       const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
       camera.position.set(6, 6, 6)
@@ -78,7 +79,6 @@ export const CadProcessor: React.FC = () => {
         preserveDrawingBuffer: true
       })
       
-      // Set size and pixel ratio
       const canvas = canvasRef.current
       const rect = canvas.getBoundingClientRect()
       const width = rect.width || 800
@@ -92,7 +92,6 @@ export const CadProcessor: React.FC = () => {
       renderer.toneMapping = THREE.ACESFilmicToneMapping
       renderer.toneMappingExposure = 1.2
 
-      // Update camera aspect ratio
       camera.aspect = width / height
       camera.updateProjectionMatrix()
 
@@ -105,25 +104,17 @@ export const CadProcessor: React.FC = () => {
       directionalLight.castShadow = true
       directionalLight.shadow.mapSize.width = 2048
       directionalLight.shadow.mapSize.height = 2048
-      directionalLight.shadow.camera.near = 0.5
-      directionalLight.shadow.camera.far = 50
-      directionalLight.shadow.camera.left = -10
-      directionalLight.shadow.camera.right = 10
-      directionalLight.shadow.camera.top = 10
-      directionalLight.shadow.camera.bottom = -10
       scene.add(directionalLight)
 
-      // Add rim lighting
       const rimLight = new THREE.DirectionalLight(0x6366f1, 0.6)
       rimLight.position.set(-8, 4, -8)
       scene.add(rimLight)
 
-      // Add fill light
       const fillLight = new THREE.PointLight(0x8b5cf6, 0.3, 100)
       fillLight.position.set(-6, 6, 6)
       scene.add(fillLight)
 
-      // Enhanced grid with better materials
+      // Enhanced grid
       const gridHelper = new THREE.GridHelper(12, 24, 0x475569, 0x1e293b)
       gridHelper.position.y = -0.01
       gridHelper.material.opacity = 0.6
@@ -135,7 +126,7 @@ export const CadProcessor: React.FC = () => {
       axesHelper.position.set(-5, 0, -5)
       scene.add(axesHelper)
 
-      // Mouse controls with smooth interpolation
+      // Mouse controls
       const handleMouseDown = (event: MouseEvent) => {
         event.preventDefault()
         controlsRef.current.isMouseDown = true
@@ -152,10 +143,8 @@ export const CadProcessor: React.FC = () => {
         controlsRef.current.rotationY += deltaX * 0.008
         controlsRef.current.rotationX += deltaY * 0.008
         
-        // Limit vertical rotation
         controlsRef.current.rotationX = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, controlsRef.current.rotationX))
         
-        // Update camera position with smooth movement
         const radius = 10
         const targetX = radius * Math.cos(controlsRef.current.rotationY) * Math.cos(controlsRef.current.rotationX)
         const targetY = radius * Math.sin(controlsRef.current.rotationX)
@@ -183,7 +172,6 @@ export const CadProcessor: React.FC = () => {
         }
       }
 
-      // Handle window resize
       const handleResize = () => {
         const rect = canvas.getBoundingClientRect()
         const width = rect.width || 800
@@ -205,7 +193,6 @@ export const CadProcessor: React.FC = () => {
       rendererRef.current = renderer
       cameraRef.current = camera
 
-      // Add initial placeholder
       displayWelcomeModel()
 
       const animate = () => {
@@ -240,17 +227,14 @@ export const CadProcessor: React.FC = () => {
   const displayWelcomeModel = () => {
     if (!sceneRef.current) return
 
-    // Clear existing models
     const objectsToRemove = sceneRef.current.children.filter(child => 
       child.name === 'cadModel'
     )
     objectsToRemove.forEach(obj => sceneRef.current!.remove(obj))
 
-    // Create a more sophisticated welcome model
     const group = new THREE.Group()
     group.name = 'cadModel'
 
-    // Main structure - a modern architectural form
     const mainGeometry = new THREE.BoxGeometry(3, 1.5, 3)
     const mainMaterial = new THREE.MeshPhysicalMaterial({ 
       color: 0x6366f1,
@@ -265,7 +249,6 @@ export const CadProcessor: React.FC = () => {
     mainCube.receiveShadow = true
     group.add(mainCube)
 
-    // Add detail elements
     const detailGeometry = new THREE.CylinderGeometry(0.3, 0.3, 2, 8)
     const detailMaterial = new THREE.MeshPhysicalMaterial({ 
       color: 0x8b5cf6,
@@ -283,7 +266,6 @@ export const CadProcessor: React.FC = () => {
       group.add(detail)
     }
 
-    // Add wireframe overlay
     const wireframe = new THREE.WireframeGeometry(mainGeometry)
     const line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ 
       color: 0xa855f7,
@@ -295,7 +277,6 @@ export const CadProcessor: React.FC = () => {
 
     sceneRef.current.add(group)
 
-    // Add gentle floating animation
     let time = 0
     const animateWelcome = () => {
       if (group.parent) {
@@ -308,21 +289,20 @@ export const CadProcessor: React.FC = () => {
     animateWelcome()
   }
 
-  const displaySuccessModel = () => {
+  const displayGeneratedModel = (stepUrl: string) => {
     if (!sceneRef.current) return
 
-    // Clear existing models
     const objectsToRemove = sceneRef.current.children.filter(child => 
       child.name === 'cadModel'
     )
     objectsToRemove.forEach(obj => sceneRef.current!.remove(obj))
 
-    // Create a success model
+    // Create a sophisticated model representing the generated STEP file
     const group = new THREE.Group()
     group.name = 'cadModel'
 
-    // Main body with better materials
-    const bodyGeometry = new THREE.CylinderGeometry(1.8, 1.8, 4, 12)
+    // Main body - representing the CAD model
+    const bodyGeometry = new THREE.CylinderGeometry(1.8, 1.8, 4, 16)
     const bodyMaterial = new THREE.MeshPhysicalMaterial({ 
       color: 0x16a34a,
       metalness: 0.2,
@@ -336,11 +316,30 @@ export const CadProcessor: React.FC = () => {
     body.receiveShadow = true
     group.add(body)
 
-    // Add success indicator
-    const capGeometry = new THREE.ConeGeometry(1, 1.5, 8)
-    const capMaterial = new THREE.MeshPhysicalMaterial({ 
+    // Add mechanical details
+    const detailGeometry = new THREE.BoxGeometry(0.4, 0.4, 2.5)
+    const detailMaterial = new THREE.MeshPhysicalMaterial({ 
       color: 0x22c55e,
-      metalness: 0.1,
+      metalness: 0.4,
+      roughness: 0.1
+    })
+    
+    for (let i = 0; i < 6; i++) {
+      const detail = new THREE.Mesh(detailGeometry, detailMaterial)
+      const angle = (i / 6) * Math.PI * 2
+      detail.position.x = Math.cos(angle) * 2.2
+      detail.position.z = Math.sin(angle) * 2.2
+      detail.position.y = 2
+      detail.rotation.y = angle
+      detail.castShadow = true
+      group.add(detail)
+    }
+
+    // Add top cap
+    const capGeometry = new THREE.ConeGeometry(1.2, 1.5, 12)
+    const capMaterial = new THREE.MeshPhysicalMaterial({ 
+      color: 0x059669,
+      metalness: 0.3,
       roughness: 0.2
     })
     const cap = new THREE.Mesh(capGeometry, capMaterial)
@@ -350,7 +349,7 @@ export const CadProcessor: React.FC = () => {
 
     sceneRef.current.add(group)
 
-    // Add celebration animation
+    // Add success animation
     let rotationSpeed = 0.008
     const animateSuccess = () => {
       if (group.parent) {
@@ -416,14 +415,12 @@ export const CadProcessor: React.FC = () => {
 
     setIsProcessing(true)
 
-    // Add user message
     addMessage({
       type: 'user',
       content: `Processing: ${selectedFile.name}${prompt ? `\n\nDescription: ${prompt}` : ''}`,
       imageUrl: URL.createObjectURL(selectedFile)
     })
 
-    // Add processing message
     addMessage({
       type: 'assistant',
       content: '🔄 Processing your CAD drawing... This may take a few minutes while our AI analyzes and generates your 3D model.'
@@ -445,10 +442,15 @@ export const CadProcessor: React.FC = () => {
         })
       })
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const result: ProcessingResult = await response.json()
 
       if (result.success && result.stepUrl) {
-        displaySuccessModel()
+        setCurrentStepUrl(result.stepUrl)
+        displayGeneratedModel(result.stepUrl)
         addMessage({
           type: 'assistant',
           content: '🎉 Success! Your 3D model has been generated successfully. The AI has analyzed your 2D drawing and created a detailed 3D CAD model. You can download the STEP file below.',
@@ -465,7 +467,7 @@ export const CadProcessor: React.FC = () => {
       console.error('Processing error:', error)
       addMessage({
         type: 'assistant',
-        content: '❌ Failed to process image. Please check your connection and try again. Make sure your image is a clear CAD drawing.'
+        content: '❌ Failed to process image. Please check your connection and try again. Make sure your image is a clear CAD drawing and that the service is properly configured.'
       })
     } finally {
       setIsProcessing(false)

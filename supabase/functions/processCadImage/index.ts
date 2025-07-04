@@ -25,6 +25,8 @@ Deno.serve(async (req) => {
 
     const { imageData, fileName, prompt }: ProcessRequest = await req.json()
 
+    console.log('Processing CAD image:', fileName)
+
     // Decode base64 image data
     const imageBytes = Uint8Array.from(atob(imageData), c => c.charCodeAt(0))
     
@@ -38,28 +40,51 @@ Deno.serve(async (req) => {
       })
 
     if (imageError) {
+      console.error('Image upload error:', imageError)
       throw new Error(`Image upload failed: ${imageError.message}`)
     }
+
+    console.log('Image uploaded successfully:', imageFileName)
 
     // Get the public URL for the uploaded image
     const { data: imageUrl } = supabaseClient.storage
       .from('cad-images')
       .getPublicUrl(imageFileName)
 
-    // Create a temporary file for processing
+    // Create temporary files for processing
     const tempImagePath = `/tmp/input_${Date.now()}.jpg`
     const tempStepPath = `/tmp/output_${Date.now()}.step`
     
     await Deno.writeFile(tempImagePath, imageBytes)
+    console.log('Temporary image file created:', tempImagePath)
+
+    // Check if Python and required packages are available
+    try {
+      const pythonCheck = new Deno.Command('python3', {
+        args: ['-c', 'import sys; print(sys.version)'],
+        stdout: 'piped',
+        stderr: 'piped',
+      })
+      const { code: checkCode } = await pythonCheck.output()
+      if (checkCode !== 0) {
+        throw new Error('Python3 not available')
+      }
+    } catch (error) {
+      console.error('Python check failed:', error)
+      throw new Error('Python environment not properly configured')
+    }
 
     // Set up environment for Python execution
     const env = {
       ...Deno.env.toObject(),
       PYTHONPATH: '/home/project',
       PATH: `${Deno.env.get('PATH')}:/usr/local/bin:/usr/bin:/bin`,
+      OPENAI_API_KEY: Deno.env.get('OPENAI_API_KEY') || '',
     }
 
-    // Execute the CAD3Dify Python script
+    console.log('Starting Python CAD processing...')
+
+    // Execute the CAD3Dify Python script with timeout
     const pythonProcess = new Deno.Command('python3', {
       args: ['/home/project/scripts/cli.py', tempImagePath, '--output_filepath', tempStepPath],
       cwd: '/home/project',
@@ -68,23 +93,34 @@ Deno.serve(async (req) => {
       env: env,
     })
 
-    const { code, stdout, stderr } = await pythonProcess.output()
+    // Set a timeout for the Python process (5 minutes)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Processing timeout - operation took too long')), 300000)
+    })
+
+    const processPromise = pythonProcess.output()
+    
+    const { code, stdout, stderr } = await Promise.race([processPromise, timeoutPromise]) as any
     
     const stdoutText = new TextDecoder().decode(stdout)
     const stderrText = new TextDecoder().decode(stderr)
     
     console.log('Python stdout:', stdoutText)
-    console.log('Python stderr:', stderrText)
+    if (stderrText) console.log('Python stderr:', stderrText)
     
     if (code !== 0) {
-      throw new Error(`Python script failed (exit code ${code}): ${stderrText}`)
+      throw new Error(`Python script failed (exit code ${code}): ${stderrText || 'Unknown error'}`)
     }
+
+    console.log('Python processing completed successfully')
 
     // Check if STEP file was created
     let stepFileData: Uint8Array
     try {
       stepFileData = await Deno.readFile(tempStepPath)
+      console.log('STEP file read successfully, size:', stepFileData.length, 'bytes')
     } catch (error) {
+      console.error('STEP file read error:', error)
       throw new Error(`STEP file not generated: ${error.message}`)
     }
     
@@ -98,8 +134,11 @@ Deno.serve(async (req) => {
       })
 
     if (stepError) {
+      console.error('STEP upload error:', stepError)
       throw new Error(`STEP file upload failed: ${stepError.message}`)
     }
+
+    console.log('STEP file uploaded successfully:', stepFileName)
 
     // Get the public URL for the STEP file
     const { data: stepUrl } = supabaseClient.storage
@@ -126,9 +165,12 @@ Deno.serve(async (req) => {
     try {
       await Deno.remove(tempImagePath)
       await Deno.remove(tempStepPath)
+      console.log('Temporary files cleaned up')
     } catch (cleanupError) {
       console.warn('Failed to clean up temporary files:', cleanupError)
     }
+
+    console.log('Processing completed successfully')
 
     return new Response(
       JSON.stringify({
