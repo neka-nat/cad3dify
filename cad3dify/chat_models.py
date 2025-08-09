@@ -29,33 +29,33 @@ class ChatModelParameters(BaseModel):
     def default(cls) -> "ChatModelParameters":
         return cls(
             provider="openai",
-            model_name="gpt-4o-2024-08-06",
-            temperature=0.0,
-            max_tokens=16384,
+            model_name="gpt-5-2025-08-07",
+            temperature=1.0,
+            max_tokens=128000,
         )
 
     @classmethod
     def from_model_name(
         cls,
         model_type: MODEL_TYPE,
-        temperature: float = 0.0,
+        temperature: float = 1.0,
     ) -> "ChatModelParameters":
         model_type_to_parameters = {
             "gpt": cls(
                 provider="openai",
-                model_name="gpt-4.1-2025-04-14",
+                model_name="gpt-5-2025-08-07",
                 temperature=temperature,
-                max_tokens=16384,
+                max_tokens=128000,
             ),
             "claude": cls(
                 provider="anthropic",
-                model_name="claude-3-7-sonnet-20250219",
+                model_name="claude-opus-4-1-20250805",
                 temperature=temperature,
-                max_tokens=8192,
+                max_tokens=32000,
             ),
             "gemini": cls(
                 provider="google",
-                model_name="gemini-2.5-pro-preview-05-06",
+                model_name="gemini-2.5-pro",
                 temperature=temperature,
                 max_tokens=8192,
             ),

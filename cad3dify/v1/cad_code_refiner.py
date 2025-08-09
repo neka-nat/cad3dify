@@ -1,8 +1,7 @@
 from typing import Any, Union
 
-from langchain import PromptTemplate
 from langchain.chains import LLMChain, SequentialChain, TransformChain
-from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
+from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, PromptTemplate
 from langchain_core.prompts.image import ImagePromptTemplate
 
 from .cad_code_generator import _parse_code

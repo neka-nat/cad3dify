@@ -1,4 +1,5 @@
 import tempfile
+from string import Template
 
 from loguru import logger
 
@@ -37,7 +38,7 @@ def generate_step_from_2d_cad_image(
     chain = CadCodeGeneratorChain(model_type=model_type)
 
     result = chain.invoke(image_data)["result"]
-    code = result.format(output_filename=output_filepath)
+    code = Template(result).substitute(output_filename=output_filepath)
     logger.info("1st code generation complete. Running code...")
     logger.debug("Generated 1st code:")
     logger.debug(code)
@@ -57,7 +58,7 @@ def generate_step_from_2d_cad_image(
             if result is None:
                 logger.error(f"Refinement failed. Skipping to the next step.")
                 continue
-            code = result.format(output_filename=output_filepath)
+            code = Template(result).substitute(output_filename=output_filepath)
             logger.info("Refined code generation complete. Running code...")
             logger.debug(f"Generated {index_map(i)} refined code:")
             logger.debug(code)

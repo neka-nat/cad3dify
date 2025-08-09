@@ -1,6 +1,6 @@
 # cad3dify
 
-Using GPT-4.1 (or Claude 3.7 sonnet, Gemini 2.0 flash, Llama 3.2 on Vertex AI), generate a 3D CAD model (STEP file) from a 2D CAD image.
+Using GPT-5 (or Claude 4.1 opus, Gemini 2.5 pro, Llama 3.2 on Vertex AI), generate a 3D CAD model (STEP file) from a 2D CAD image.
 
 ## Getting started
 
